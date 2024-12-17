@@ -22,10 +22,10 @@ class Forcer:
   
 def args_to_class():
     example_usage = '''example usage:
-        ./xmlforcer.py -u john https://example.com /opt/wordlists/rockyou.txt -p 8443
-        python3 xmlforcer.py http://example.com /opt/wordlists/rockyou.txt'''
+        ./rpcforcer.py -u john https://example.com /opt/wordlists/rockyou.txt -p 8443
+        python3 rpcforcer.py http://example.com /opt/wordlists/rockyou.txt'''
 
-    parser = argparse.ArgumentParser(prog='xmlforcer',
+    parser = argparse.ArgumentParser(prog='rpcforcer',
                                     description='brute force wordpress logins with xmlrpc',
                                     epilog=example_usage,
                                     formatter_class=argparse.RawDescriptionHelpFormatter)
