@@ -4,4 +4,4 @@ Brute force users through xmlrpc for older wordpress instances. Wordpress instan
 # Example usage
 `./rpcforcer.py -u john https://example.com /opt/wordlists/rockyou.txt -p 8443`
 
-`python3 rpcforcer.py http://example.com /opt/wordlists/rockyou.txt'''`
+`python3 rpcforcer.py http://example.com /opt/wordlists/rockyou.txt`
